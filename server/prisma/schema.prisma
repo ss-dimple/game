@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin_info {
+  id        Int     @id @default(autoincrement())
+  nick_name String? @db.VarChar(255)
+  name      String? @db.VarChar(50)
+  phone     String? @db.VarChar(20)
+  sex       Int?    @db.TinyInt
+  password  String? @db.VarChar(255)
+  salt      String? @db.VarChar(255)
+  status    Int?    @default(1) @db.TinyInt
+  level     Int?    @db.TinyInt
+}
+
+model channel {
+  id          Int     @id @default(autoincrement())
+  channelName String? @db.VarChar(255)
+  channelNum  Int?
+}
+
+/// This model has been renamed to 'Renamedclass' during introspection, because the original name 'class' is reserved.
+model Renamedclass {
+  id         Int     @id @default(autoincrement())
+  className  String? @db.VarChar(255)
+  classLevel Int?
+  user       user[]
+
+  @@index([classLevel], map: "classLevel")
+  @@map("class")
+}
+
+model comment {
+  id             Int       @id @default(autoincrement())
+  commentContent String?   @db.VarChar(255)
+  commentScore   Int?
+  commentTime    DateTime? @default(now()) @db.Timestamp(0)
+  userno         Int?
+  gameId         Int?
+}
+
+model download {
+  id           Int       @id @default(autoincrement())
+  downloadTime DateTime? @db.DateTime(0)
+  userId       Int?
+  fileId       Int?
+  gameId       Int?
+}
+
+model file {
+  id        Int     @id @default(autoincrement())
+  filePath  String? @db.VarChar(255)
+  fileType  String? @db.VarChar(255)
+  gameId    Int?
+  teacherId Int?
+}
+
+model filetype {
+  id            Int     @id @default(autoincrement())
+  fileTypeName  String? @db.VarChar(255)
+  fileTypeLevel Int?
+}
+
+model game {
+  id        Int     @id @default(autoincrement())
+  gameName  String? @db.VarChar(255)
+  gameTitle String? @db.VarChar(255)
+  gameDesc  String? @db.VarChar(255)
+  gameMeta  Int?    @db.TinyInt
+  typeId    Int?
+  teamId    Int?
+  teacherId Int?
+  status    Int?    @db.TinyInt
+  tags      String? @db.Text
+  language  String? @db.VarChar(255)
+  set       String? @db.VarChar(255)
+  comdition Int?    @default(0)
+  avg       String? @db.VarChar(255)
+  username  String? @db.VarChar(255)
+}
+
+model game_user_role {
+  id         Int     @id @default(autoincrement())
+  role_name  String? @db.VarChar(20)
+  role_level Int?
+}
+
+model grade {
+  id         Int     @id @default(autoincrement())
+  gradeName  String? @db.VarChar(255)
+  gradeLevel Int?
+  user       user[]
+
+  @@index([gradeLevel], map: "gradeLevel")
+}
+
+model integral {
+  id            Int  @id @default(autoincrement())
+  integralScore Int?
+  userId        Int?
+  channelId     Int?
+}
+
+model role {
+  id        Int     @id @default(autoincrement())
+  roleName  String? @db.VarChar(255)
+  roleLevel Int?
+  user      user[]
+
+  @@index([roleLevel], map: "roleLevel")
+}
+
+model tag {
+  id       Int     @id @default(autoincrement())
+  tagName  String? @db.VarChar(255)
+  tagLevel Int?
+}
+
+model team {
+  id          Int     @id @default(autoincrement())
+  teamName    String? @db.VarChar(255)
+  teamInfo    String? @db.VarChar(255)
+  player0Name String? @db.VarChar(255)
+  player0Id   Int?
+  player0Work String? @db.VarChar(255)
+  player1Name String? @db.VarChar(255)
+  player1Id   Int?
+  player1Work String? @db.VarChar(255)
+  teacherId   Int?
+  status      Int?
+}
+
+model type {
+  id        Int     @id @default(autoincrement())
+  typeName  String? @db.VarChar(255)
+  typeLevel Int?
+}
+
+model user {
+  id           Int           @id @default(autoincrement())
+  password     String?       @db.VarChar(255)
+  sex          Int?          @db.TinyInt
+  gradeId      Int?
+  classId      Int?
+  roleId       Int?
+  salt         String?       @db.VarChar(255)
+  email        String?       @db.VarChar(255)
+  username     String?       @db.VarChar(255)
+  userno       Int?
+  grade        grade?        @relation(fields: [gradeId], references: [id], onUpdate: Restrict, map: "关联年级表id")
+  Renamedclass Renamedclass? @relation(fields: [classId], references: [id], onUpdate: Restrict, map: "关联班级表id")
+  role         role?         @relation(fields: [roleId], references: [id], onUpdate: Restrict, map: "关联角色id")
+
+  @@index([gradeId], map: "关联年级表id")
+  @@index([classId], map: "关联班级表id")
+  @@index([roleId], map: "关联角色id")
+}
+
+model user_info {
+  id        Int     @id @default(autoincrement())
+  nick_name String  @db.VarChar(50)
+  name      String? @db.VarChar(50)
+  sex       Int?    @db.TinyInt
+  phone     String? @db.VarChar(20)
+  company   String? @db.VarChar(50)
+  password  String? @db.VarChar(255)
+  salt      String? @db.VarChar(255)
+  status    Int?    @default(1) @db.TinyInt
+}
