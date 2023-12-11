@@ -62,6 +62,13 @@ export const getEmailCode = (data: any) =>
     url: "/user/verify/getTeamInfo",
     method: 'get'
   })
+
+  export const getTeamInfoByUsername = (username: string) =>
+  request({
+    url: `/user/verify/getTeamInfoByUsername?username=${username}`,
+    method: 'get'
+  })
+
   export const reduceIntegral = (data: any) =>
   request({
     url: '/user/verify/reduceIntegral',

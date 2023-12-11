@@ -76,6 +76,17 @@ export class UserManegeController extends BaseController {
     });
   }
 
+  @Get('/getTeamInfoByUsername')
+  async getTeamInfoByUsername(@Query('username') username: string): Promise<ResOp> {
+    // return res({
+    //   data: await this.userManageService.getTeamInfo(userno),
+    // });
+    console.log(username, 'username');
+    const result = await this.userManageService.getTeamInfoByUsername(username);
+    console.log(result, '我所在账号的团队信息');
+    return res({ data: result });
+  }
+
   @Post('/teamSubmit')
   async teamSubmit(@Body(ALL) teamForm): Promise<ResOp> {
     // console.log('seach dto:', dto);

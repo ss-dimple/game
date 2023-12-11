@@ -32,7 +32,7 @@
           <el-table-column prop="gameName" label="游戏名" />
           <el-table-column prop="typeId" label="游戏类型" :formatter="typeIdFormatter" />
           <el-table-column prop="gameTitle" label="游戏简介" />
-          <!-- <el-table-column prop="gameName" label="游戏名称" /> -->
+          <el-table-column prop="check" label="审核状态"  :formatter="comditionFormatter" />
           <!-- <el-table-column prop="team" label="团队名称" /> -->
           <el-table-column label="操作" width="300">
               <template #default="scope">
@@ -43,8 +43,16 @@
                     @click.prevent="onGameInfo(scope.row)"
                     >
                     查看详情
-                    <!--  @click="drawer = true" v-model="drawer" @click="onAddType"-->
+                    <!--  @click="drawer = true" v-model="drawer" @click="onAddType"
+                    v-if="scope.row.status == 1"-->
                   </el-button>
+                  <!-- <el-button 
+                      type="success"
+                      size="small"
+                      @click.prevent="onGameInfo(scope.row)"
+                      >
+                      已审核
+                  </el-button> -->
                   <!-- <el-drawer :visible.sync="drawer" title="游戏基本信息" size="30%" :before-close="handleClose" >
                     <div>
                       <el-button @click="innerDrawer = true">查看图片</el-button>
@@ -143,6 +151,7 @@ import getGameInfo from './components/getGameInfo.vue'
     gameName:string,
     typeId: number | null,
     gameTitle:string,
+    check:number,
     page:number,
     limit:number
   }
@@ -151,6 +160,7 @@ import getGameInfo from './components/getGameInfo.vue'
     gameName:'',
     typeId: null,
     gameTitle: '',
+    check: 0,
     page:currentPage.value,
     limit:pageSize.value
   })
@@ -187,12 +197,14 @@ const id = ref(0)
 
 const onGameInfo = async(gameInfo:any)=>{
   try{
-    console.log(gameInfo, 'gameInfo')
+    console.log(gameInfo, 'gameInfo1')
     id.value = gameInfo.id
     console.log(2333,id)
-    getGameInfoShow.value = true ;
+    getGameInfoShow.value = !getGameInfoShow.value;
     // const games:any = gameInfo
-    drawer.value = true
+    drawer.value = !drawer.value
+    console.log(getGameInfoShow.value,drawer.value);
+    
   }catch(error){
     console.log(error)
   }
@@ -200,6 +212,7 @@ const onGameInfo = async(gameInfo:any)=>{
 
 const closeGetGameInfo = (v: boolean)=>{
   getGameInfoShow.value = false ;
+  onSubmit()
 }
 
 
@@ -323,6 +336,18 @@ const closeGetGameInfo = (v: boolean)=>{
       }
       return ""
   }
+
+  const comditionFormatter=(row:any)=>{
+      if(row.check == 0){
+          return "未审核"
+      }else if(row.check == 1){
+          return "已审核"
+      }else if(row.check == 2){
+          return "已驳回"
+      }
+      return ""
+  }
+
   
 
 //筛选框

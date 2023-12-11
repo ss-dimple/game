@@ -28,8 +28,8 @@ export class AddGameDto {
   @Rule(RuleType.required())
   newSet: string;
 
-  @Rule(RuleType.number().integer().min(0).max(1).default(1))
-  status: number;
+  // @Rule(RuleType.number().integer().min(0).max(1).default(1))
+  // status: number;
 
   @Rule(RuleType.number().integer().min(0).max(1).default(1))
   gameMeta: number;
@@ -40,8 +40,12 @@ export class AddGameDto {
   @Rule(RuleType.number().integer().required())
   teacherId: number;
 
-  @Rule(RuleType.number().integer().required())
+  @Rule(RuleType.required())
+  teamName: string;
+
+  @Rule(RuleType.number().integer())
   teamId: number;
+
   @Rule(RuleType.required())
   username: string;
 }
@@ -52,4 +56,27 @@ export class updateAvgDto {
 
   @Rule(RuleType.number().integer().required())
   gameId: number;
+}
+
+export class updateCheckDto {
+  @Rule(RuleType.number().integer().required())
+  check: number;
+
+  @Rule(RuleType.number().integer().required())
+  gameId: number;
+}
+
+export class AddRejectDto {
+
+  @Rule(RuleType.number().integer().required())
+  gameId: number;
+
+  @Rule(RuleType.number().integer().required())
+  teacherId: number;
+
+  @Rule(RuleType.required())
+  username: string;
+
+  @Rule(RuleType.required())
+  reply: string;
 }

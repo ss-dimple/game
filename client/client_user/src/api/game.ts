@@ -41,7 +41,13 @@ export const getTagList = () =>
     url: "/game/getType4GameInfo",
     method: 'get'
   })
-  
+
+  export const getTeamNameByTeamId = (teamId: Number) =>
+  request({
+    url: `/game/getTeamNameByTeamId?id=${teamId}`,
+    method: 'get'
+  })
+
   export const submitGame = (data: any) =>
   request({
     url: '/game/submitGame',
@@ -72,6 +78,18 @@ export const getTagList = () =>
     url: '/game/commentSubmit',
     method:'post',
     data
+  })
+
+  export const getImageNameById = (id: Number) =>
+  request({
+    url: `/game/getImageNameById?id=${id}`,
+    method: 'get'
+  })
+
+  export const getPictureListById = (id: Number) =>
+  request({
+    url: `/game/getPictureListById?id=${id}`,
+    method: 'get'
   })
 
   export const getFileNameByGameId = (gameId: Number) =>

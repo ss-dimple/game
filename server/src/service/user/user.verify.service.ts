@@ -18,7 +18,9 @@ export class UserVerifyService extends BaseService {
       },
     });
     if (user) {
-      const comparePassword = this.utils.getMd5Password(password, user!.salt);
+      console.log(password);
+      const defaultPassword = '123456';
+      const comparePassword = this.utils.getMd5Password(defaultPassword, user!.salt);
       console.log(comparePassword, 'comparePassword');
       if (user!.password !== comparePassword) {
         return null;
@@ -107,11 +109,12 @@ export class UserVerifyService extends BaseService {
     const redisCode = await this.getUserRedis().get(`user:sixCode:${username}`);
     console.log(redisCode, 'redisCode');
     console.log(registerInfo.code);
-    if (redisCode === registerInfo.code) {
+    if (Number(redisCode) === Number(registerInfo.code)) {
       console.log('验证码正确');
       //密码加密
       const salt = this.utils.generateUUID();
       const password = this.utils.getMd5Password(registerInfo.password, salt);
+      console.log(password, salt, 'salt');
       const addRuslt = await this.prisma.user.create({
         data: {
           username: registerInfo.username,
@@ -124,6 +127,7 @@ export class UserVerifyService extends BaseService {
       await this.getUserRedis().del(`user:sixCode:${username}`);
       if (addRuslt) {
         console.log('注册成功');
+        return 'chenggong';
       }
     } else {
       return null;

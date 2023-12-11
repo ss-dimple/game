@@ -115,14 +115,14 @@
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :span="8"  :offset="2">
+                  <!-- <el-col :span="8"  :offset="2">
                     <el-form-item label="审核后是否公开" prop="status" >
                       <el-select v-model="gameInfo.status"  >
                         <el-option label="公开" :value="1" />
                         <el-option label="不公开" :value="0" />
                       </el-select>
                     </el-form-item>
-                  </el-col>
+                  </el-col> -->
                 </el-row>
                 <el-form-item>
                     <el-button type="primary" @click="submitForm(ruleFormRef)" :loading="loading">
@@ -138,15 +138,57 @@
             <div class="main-right-title">
                 <span>游戏宣传主图与安装包</span>
             </div>
+            <div class="main-right-top">
+              <el-upload
+                class="avatar-uploader"
+                action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                :show-file-list="false"
+                :on-change="beforeimageUpload"                
+              >
+                <el-image v-if="imageUrl" :src="imageUrl" class="avatar" fit="cover"  />
+                <el-icon v-else class="avatar-uploader-icon"><h4 >宣传主图(1028*768)</h4></el-icon>
+                <!-- <el-button class="ml-3" type="success" @click="imageUpload">
+                提交主图
+              </el-button> -->
+              </el-upload>
+              <!-- <el-upload
+               class="avatar-uploader" 
+               action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" 
+               :show-file-list="false"
+               :on-success="handleAvatarSuccess"
+               :before-upload="beforeAvatarUpload"
+               :auto-upload="false">
+                <el-icon><Plus /></el-icon>
+
+                <template #file="{ file }">
+                  <div>
+                    <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+                    <span class="el-upload-list__item-actions">
+                      <span
+                        class="el-upload-list__item-preview"
+                        @click="handlePictureCardPreview(file)"
+                      >
+                        <el-icon><zoom-in /></el-icon>
+                      </span>
+                    </span>
+                  </div>
+                </template>
+              </el-upload>
+
+              <el-dialog v-model="dialogVisible">
+                <img w-full :src="dialogImageUrl" alt="Preview Image" />
+              </el-dialog> -->
+            </div>
             <el-upload
               ref="uploadRef"
               class="upload-demo"
               action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
               :auto-upload="false"
               :on-change="beforeUpload"
+              list-type="picture"
             >
               <template #trigger>
-                <el-button type="primary">请选择游戏宣传图和压缩文件</el-button>
+                <el-button class="upload-demo-title" type="primary">请选择游戏宣传图和压缩文件</el-button>
               </template>
               <el-button class="ml-3" type="success" @click="FileUpload">
                 提交
@@ -158,50 +200,7 @@
                 </div>
               </template>
             </el-upload>
-
-            <!-- <div class="main-right-img">
-              // <el-form-item  prop="imgPath"> 
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-              <el-upload
-              class="avatar-uploader"
-              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-              :show-file-list="false"
-              :on-success="handleAvatarSuccess"
-              :before-upload="beforeAvatarUpload"
-              :on-change="handleImgChange"
-              :auto-upload="false"
-            >
-              // <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-              //<el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon> 
-              <template #trigger>
-                <el-button type="primary">选择主图</el-button>
-              </template>
-              <el-button type="success"  @click="imgUpload" 
-              :disabled="uploadImgDisable" :loading="uploadImgLoading"> 提交宣传主图</el-button>
-            </el-upload>
-          </el-form-item> 
-            </div>
-            <div class="main-right-files">
-              <el-upload class="upload"
-                 ref="upload"
-                 action=""
-                 :http-request="upload"
-                 :file-list="fileUploadList"	
-                 :auto-upload="false"			
-                 :on-change="handleChange"	
-                 :on-preview="handlePreview"	
-                 :on-remove="handleRemove"	
-                 :multiple=false
-                 >	
-                <el-button slot="trigger"
-                          type="primary"
-                          @click="delFile">选取文件</el-button>
-              </el-upload>
-              <el-button type="primary" :loading="uploadFileLoading" @click="FileUpload">上传</el-button>
-            </div> -->
-            <!-- <el-button style="margin-top: 12px;" @click="pre" v-if="active>1" type="primary">上一步</el-button>
-            <el-button style="margin-top: 12px;" @click="next" v-if="active<3" type="success">下一步</el-button> -->
+            
         </div>
     </div>
 
@@ -215,14 +214,13 @@ import { Plus } from '@element-plus/icons-vue'
 import { Edit, Picture, Upload } from '@element-plus/icons-vue'
 import type {UploadInstance, UploadProps, UploadUserFile } from 'element-plus'
 // import { UploadFilled } from '@element-plus/icons-vue'
-import {getTeachers, getTeamInfo} from '@/api/user'
-import {getTypeList,getTagList , submitGame, getGameDescByGameName } from '@/api/game'
+import {getTeachers, getTeamInfo,getTeamInfoByUsername} from '@/api/user'
+import {getTypeList,getTagList ,getTeamNameByTeamId, submitGame, getGameDescByGameName } from '@/api/game'
 import axios from 'axios';
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { Action } from 'element-plus'
 import { UserStore } from '@/store/user'
-// import type { UploadProps } from 'ant-design-vue';
 // import {submitImgFile, submitFile } from '@/api/files'
 
 //步骤条
@@ -240,8 +238,9 @@ onMounted(async() => {
   teachers.value = (await getTeachers()).data
   types.value = (await getTypeList()).data
   tagInfo.value = (await getTagList()).data
-  teams.value = (await getTeamInfo()).data
-  // console.log(teams, 'teachers')
+  // teams.value = (await getTeamInfo()).data
+  teams.value = (await getTeamInfoByUsername(username)).data
+  console.log(teams, 'teachers')
   // console.log(types, tags )
 })
 
@@ -257,7 +256,7 @@ interface paramsGame {
   teamId:number | null,
   typeId:number | null,
   tags: never[],
-  status:number | null,
+  // status:number | null,
   gameMeta:number | null,
   teacherId:number| null
 }
@@ -271,7 +270,7 @@ const gameInfo = reactive<paramsGame>({
   gameDesc: '',
   language: [],
   set: [],
-  status: null,
+  // status: null,
   gameMeta: null,
   teacherId: null,
 })
@@ -321,13 +320,13 @@ const rules = reactive<FormRules>({
       trigger: 'change',
     },
   ],
-  status: [
-    {
-      required: true,
-      message: '',
-      trigger: 'change',
-    },
-  ],
+  // status: [
+  //   {
+  //     required: true,
+  //     message: '',
+  //     trigger: 'change',
+  //   },
+  // ],
   gameMeta: [
     {
       required: true,
@@ -350,7 +349,9 @@ const loading = ref(false);
 let gameId :any = ref()
 let teamId :any = ref()
 const userStore = UserStore();
-const username = ref(userStore.username)
+const username = userStore.username
+console.log(username,'cangku ');
+
 
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
@@ -374,6 +375,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         // gameName.value = gameInfo.gameName
         // console.log(gameName.value,'gameName')
         const gameName: string = gameInfo.gameName
+
+        //根据团队id查询团队名称，传入游戏信息表
+        const teamName = await getTeamNameByTeamId(Number(gameInfo.teamId))
+        console.log(teamName,'teamName');
+        
         loading.value = true;
           try {
             const newTag = gameInfo.tags.join(",")
@@ -384,6 +390,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             Reflect.set(gameInfo,'newLanguage', newLanguage);
             Reflect.set(gameInfo,'newSet', newSet);
             Reflect.set(gameInfo,'username', username);
+            Reflect.set(gameInfo,'teamName', teamName.data.teamName);
             console.log(gameInfo, 'gameInfo')
             const result:any = await submitGame(gameInfo)
             if(result.code !== 200){
@@ -397,7 +404,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
               gameId.value = gameDesc.id
               teamId.value = gameDesc.teamId
               console.log(gameId.value,teamId.value, 'gameId,teamId')
-              active.value+=1
+              active.value +=1
+              console.log(active,'active');
+              
             }
           } catch (error) {
             console.log('error submit!', error)
@@ -425,6 +434,93 @@ const options = Array.from({ length: 10000 }).map((_, idx) => ({
   value: `${idx + 1}`,
   label: `${idx + 1}`,
 }))
+
+//上传主图
+const imageUrl = ref()
+
+const uploadImageRef = ref<UploadInstance>()
+// const fileUploadList:any = ref([])
+const uploadImageLoading =ref(false)
+// let fileType = ref('2')
+
+const  beforeimageUpload= (uploadFile:UploadFile,_uploadFiles:UploadFiles)=> {
+  const type = ['image/png','image/jpg','image/jpeg'];
+  const extFileName:string = uploadFile.raw?.type as string;
+  const extFileSize:Number = uploadFile.raw?.size as Number;
+  console.log(uploadFile.raw, '上传主图')
+  if(type.indexOf(extFileName) === -1){
+    ElMessage({
+      type:'warning',
+      message:'不符合此类型上传文件',
+    })
+    uploadImageRef.value!.clearFiles()
+    return false;
+  }else if(((extFileSize / 1024 /1024) >10) ) {
+    ElMessage({
+      type:'warning',
+      message:'文件大小不能大于10mb',
+    })
+    uploadRef.value!.clearFiles()
+    return false;
+  }else{
+    imageUrl.value = window.URL.createObjectURL(uploadFile.raw as Blob)
+    // fileList.value = uploadFile.raw;
+    imageUrl.value = uploadFile.raw
+    // fileList.value.uid = Date.now(); // 设置uid为当前时间戳
+    console.log(imageUrl.value, 'imageUrl') 
+
+    //上传到后端
+    const formData = new FormData();
+    formData.append('image',imageUrl.value)
+    formData.append('gameId',gameId.value)
+    formData.append('teamId',teamId.value)
+
+    uploadImageLoading.value = true;
+    //FormData.entries() 方法返回一个 iterator对象 ，此对象可以遍历访问FormData中的键值对。其中键值对的key是一个 USVString 对象；value是一个 USVString , 或者 Blob对象。
+    for (var pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
+
+    console.log(formData,'formdata');
+    
+
+    axios.defaults.baseURL='http://127.0.0.1:7001';
+    axios({
+        method: 'post',
+        url: '/api/files/imageupload',
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data"}
+    }).then(({data}) => {
+        // imageSrc2.value = data.data.info[0]
+        console.log(data)
+        ElMessage({
+          message: '主图提交成功!请继续提交宣传图和压缩包！',
+          type: 'success',
+        })
+    }).catch((err) =>{
+        console.log(err)
+    }).finally(() =>{
+        console.log("upload is over")
+        uploadImageLoading.value = false;
+    })
+  }
+}
+
+
+
+// const dialogImageUrl = ref('')
+// const dialogVisible = ref(false)
+// const disabled = ref(false)
+
+// const handleRemove = (file: UploadFile) => {
+//   console.log(file)
+// }
+
+// const handlePictureCardPreview = (file: UploadFile) => {
+//   dialogImageUrl.value = file.url!
+//   dialogVisible.value = true
+// }
+
 
 //上传下载文件
 const uploadRef = ref<UploadInstance>()
@@ -460,7 +556,7 @@ const  beforeUpload= (uploadFile:UploadFile,_uploadFiles:UploadFiles)=> {
     console.log(fileList.value, 'fileList') 
   }
 }
-//上传文件
+//上传宣传图和压缩包文件
 const FileUpload = async() => {
     const formData = new FormData();
     fileList.value.forEach((file: any, index: any)=>{
@@ -683,20 +779,20 @@ const FileUpload = async() => {
     /* margin: 8px;
     padding: 10px; */
     width: 95%;
-    /* height: 700px; */
+    /* height: 100%; */
     margin: 10px;
     /* display: flex; */
 }
 
 
 .team-form{
-  border: 1px solid silver;
+  /* border: 1px solid silver; */
   margin: 8px;
   padding: 10px;
 }
 
 .main-info{
-    border: 1px solid silver;
+    /* border: 1px solid silver; */
     /* width: 95%; */
     /* height: 400px; */
     display: flex;
@@ -705,7 +801,7 @@ const FileUpload = async() => {
     color:#8c939d
 }
 .main-info-left{
-    border: 1px solid rgb(228, 228, 228);
+    /* border: 1px solid rgb(228, 228, 228); */
     background-color: rgb(247, 246, 246);
     width: 96%;
     /* height: 370px; */
@@ -715,7 +811,7 @@ const FileUpload = async() => {
 }
 .main-left-title{
     /* width: 95%; */
-    border: 1px solid silver;
+    /* border: 1px solid silver; */
     text-align: left;
     color: black;
     height: 30px;
@@ -725,23 +821,66 @@ const FileUpload = async() => {
     font-size: 20px;
 }
 .main-left-form{
-    border: 1px solid silver;
+    /* border: 1px solid silver; */
     margin: 5px;
     padding: 5px;
+    color: #8c939d;
+}
+.el-form.item ::v-deep .el-form-item_label{
+  color: #8c939d !important;
 }
 .main-info-right{
-    border: 1px solid rgb(228, 228, 228);
+    /* border: 1px solid rgb(228, 228, 228); */
     background-color: rgb(247, 246, 246);
-    width: 55%;
-    width: 96%;
+    /* height: 60%; */
+    width: 99%;
     /* height: 350px; */
     /* display: flex; */
     margin: 5px;
     padding: 5px;
+    
+}
+
+.main-right-top{
+  /* border: 1px solid black; */
+  width: 42%;
+  /* height: 384px; */
+  margin: 5px;
+  padding: 5px;
+  /* position: fixed; */
+  float: left;
+}
+
+.avatar-uploader{
+  border: 1px dashed gray;
+  /* width: 640px; */
+  height: 250px;
+  display: block;
+  position: relative;
+}
+
+.avatar-uploader-icon{
+  /* height: 250px; */
+  cursor: pointer;
+  position: absolute;;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
 }
 .main-right-title{
     width: 95%;
-    border: 1px solid silver;
+    /* border: 1px solid silver; */
     color: black;
     text-align: left;
     height: 30px;
@@ -751,7 +890,16 @@ const FileUpload = async() => {
     font-size: 20px;
 }
 .upload-demo{
+  /* border: 1px dashed gray; */
+  width: 50%;
+  height: 400px;
+  float: right;
   margin: 5px;
+  padding: 5px;
+  overflow:scroll;
+}
+.upload-demo-title{
+  margin: 8px;
   padding: 5px;
 }
 .main-right-img{

@@ -29,6 +29,7 @@
 <style scoped lang="scss">
 *{
     background-color: #1b1d1f;
+    height: 100%;
 }
     .el-header{
         // background-color: #2d3136;

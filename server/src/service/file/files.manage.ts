@@ -1,7 +1,8 @@
 import { Provide, Inject } from '@midwayjs/decorator';
 import { BaseService } from '../base';
-import { Utils } from '../../common/utils';
+import { Utils} from '../../common/utils';
 import { extname } from 'path';
+
 // import fs = require('fs');
 // import path = require('path');
 
@@ -23,6 +24,22 @@ export class FilesManageService extends BaseService {
       return 200;
     } else {
       return 404;
+    }
+  }
+
+  async submitImage(filePath: any, fields: any){
+    const result = await this.prisma.file.create({
+      data:{
+        gameId: Number(fields.gameId),
+        fileType: '3',
+        filePath: filePath[0],
+      }
+    })
+    console.log(result,'result');
+    if (result) {
+      return true;
+    } else {
+      return 10022;
     }
   }
 

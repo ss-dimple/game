@@ -3,7 +3,7 @@ import { BaseController, GAME_PREFIX_URL } from '../base';
 import { GameManageService } from '../../service/game/game.manage';
 import { res, resByPage } from '../../common/utils';
 import { ResOp } from '../../interface';
-import { AddGameDto } from '../../dto/game/game.manage';
+import { AddGameDto ,updateCheckDto, AddRejectDto} from '../../dto/game/game.manage';
 
 @Provide()
 @Controller(`${GAME_PREFIX_URL}/`)
@@ -36,6 +36,15 @@ export class GameManegeController extends BaseController {
     return res({ data: result });
   }
 
+
+  @Get('/getTeamNameByTeamId')
+  async getTeamNameByTeamId(@Query('teamId') teamId: number): Promise<ResOp> {
+    console.log(teamId, 'teamId');
+    const result = await this.gameManageService.getTeamNameByTeamId(teamId);
+    console.log(result, '团队名称');
+    return res({ data: result });
+  }
+
   @Post('/submitGame')
   async submitGame(@Body(ALL) dto: AddGameDto): Promise<ResOp> {
     // console.log('seach dto:', dto);
@@ -63,11 +72,19 @@ export class GameManegeController extends BaseController {
     return resByPage(list, total, searchGameForm.page, searchGameForm.limit);
   }
 
-  @Get('/getImageListById')
-  async getImageListById(@Query('id') id: number): Promise<ResOp> {
+  @Get('/getPictureListById')
+  async getPictureListById(@Query('id') id: number): Promise<ResOp> {
     console.log(id, 'id');
-    const result = await this.gameManageService.getImageListById(id);
-    console.log(result, '图片文件名称');
+    const result = await this.gameManageService.getPictureListById(id);
+    console.log(result, '宣传图片文件名称');
+    return res({ data: result });
+  }
+
+  @Get('/getImageNameById')
+  async getImageNameById(@Query('id') id: number): Promise<ResOp> {
+    console.log(id, 'id');
+    const result = await this.gameManageService.getImageNameById(id);
+    console.log(result, '主图名称');
     return res({ data: result });
   }
 
@@ -86,12 +103,25 @@ export class GameManegeController extends BaseController {
     console.log(result, '增加游戏平均分');
     return res({ data: result });
   }
-  @Put('/updateConditionById')
-  async updateConditionById(@Query('id') id: number): Promise<ResOp> {
-    console.log(id, 'id');
-    // dto: updateAvgDto
-    const result = await this.gameManageService.updateConditionById(id);
+
+  @Put('/updateCheck')
+  async updateCheck(@Body(ALL) dto: updateCheckDto): Promise<ResOp> {
+    console.log(dto,'checkInfo');
+    
+    const result = await this.gameManageService.updateCheck(dto);
     console.log(result, '修改游戏审核状态');
+    if (!result) {
+      return res({ code: 10001 });
+    }
     return res({ data: result });
   }
+  @Post('/addRejectInfo')
+  async addRejectInfo(@Body(ALL) dto: AddRejectDto): Promise<ResOp> {
+    const result = await this.gameManageService.addRejectInfo(dto);
+    if (!result) {
+      return res({ code: 10001 });
+    }
+    return res();
+  }
+
 }

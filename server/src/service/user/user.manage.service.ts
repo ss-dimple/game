@@ -52,6 +52,7 @@ export class UserManageService extends BaseService {
         username: username,
       },
     });
+    console.log(result,'result')
     return result;
   }
 
@@ -157,6 +158,22 @@ export class UserManageService extends BaseService {
   async getTeamInfo() {
     const teams = await this.prisma.team.findMany({});
     return teams;
+  }
+
+  async getTeamInfoByUsername(username: string) {
+    const teamInfo = await this.prisma.team.findMany({
+      where: {
+        OR: [
+          {
+            player0Name: username,
+          },
+          {
+            player1Name: username,
+          },
+        ],
+      },
+    });
+    return teamInfo;
   }
 
   async teamSubmit(teamForm: any) {

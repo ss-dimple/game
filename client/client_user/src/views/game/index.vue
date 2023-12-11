@@ -1,5 +1,5 @@
 <template>
-<div class="main">
+<div class="main"  >
   <div class="header-menu">
     <Hometop>
       <Sidebar></Sidebar> 
@@ -8,13 +8,12 @@
     <div class="common-layout">
       <el-container  v-for="item in gameInfo">
         <el-header >
-          <div class="header-left">
-            <!-- <el-image style="width: 100px; height: 100px" src="../../../public/images/精品-1.jpg" fit="cover" /> -->
+          <!-- <div class="header-left">
             <div class="header-left-img">
               <img :src="imageList[0]" alt="" fit="fill" >
             </div>
-          </div>
-          <div class="header-right">
+          </div> -->
+          <div class="header-item">
             <div class="header-right-name">{{item.gameName}}</div>
             <div class="header-right-tag">
               <el-button type="info" plain text bg>
@@ -25,11 +24,11 @@
               </el-button> -->
             </div>
             <!-- <div class="header-right-desc"> -->
-              <div class="header-right-title">{{item.gameTitle}}</div>
-              <div class="header-right-team">创作团队：啊对对小组</div>
+              <div class="header-right-title">"{{item.gameTitle}}"</div>
+              <!-- <div class="header-right-team">创作团队：啊对对小组</div> -->
             <!-- </div> -->
             <div class="header-right-button">
-              <el-button type="primary" plain style="width: 644px; height: 45px;"  @click="handleDownloadFile">点击下载</el-button>
+              <el-button type="primary" color="#024aff" style="width: 644px; height: 45px;"  @click="handleDownloadFile">点击下载</el-button>
             </div>
           </div>
         </el-header>
@@ -48,8 +47,8 @@
                 <div class="main-images-title">图片</div>
                 <div class="main-images-item">
                   <el-carousel indicator-position="outside">
-                    <el-carousel-item v-for="i in imageList" :key="i">
-                      <img :src="i" alt="" fit="fill" >
+                     <el-carousel-item  v-for="i in pictureList" :key="i">
+                      <img class="carousel-image"  :src="i" alt="" fit="cover" >
                     </el-carousel-item>
                   </el-carousel>
                 </div>
@@ -59,6 +58,10 @@
               <div class="aside-info">
                 <div class="aside-info-title">游戏信息</div>
                 <div class="aside-info-main">
+                  <div class="aside-main-one">
+                    <span>创作团队：</span>
+                    <span>{{item.teamId}}</span>
+                  </div>
                   <div class="aside-main-one">
                     <span>适配系统：</span>
                     <span>{{item.set}}</span>
@@ -154,7 +157,7 @@ import { format } from 'date-fns'
 import axios from 'axios';
 import { UserStore } from '@/store/user'
 import { onMounted, ref, computed } from 'vue'
-import {getGameInfoById , getCommentInfoById, getFileNameByGameId, getImageListById, addGameAvg} from '@/api/game'
+import {getGameInfoById , getCommentInfoById, getFileNameByGameId, getPictureListById, addGameAvg, getImageNameById} from '@/api/game'
 import { reduceIntegral } from '@/api/user'
 import addComment from './compents/addComment.vue'
 
@@ -163,23 +166,28 @@ const gameInfo: any= ref([])
 const commentInfo:any = ref([])
 let  gameId:any = ref()
 const fileName = ref()
-const images = ref([])
+const imageName:any = ref()
+const pictureName:any = ref([])
 let length = ref()
 // const value =ref(0)
 let sum = 0;
 
 onMounted(async() => {
    gameId  = Number(route.params.id)   //接收路径参数
-  console.log('接收到参数id:' + gameId) 
+   const id = gameId
+   console.log('接收到参数id:' + gameId,id) 
+
   // gameInfo.value = await getGameInfoById(id)
   //通过id获取游戏详情
   gameInfo.value = (await getGameInfoById(gameId)).data
   console.log(gameInfo, 'gameInfo')
+
   //通过id获取游戏评论
   commentInfo.value = (await getCommentInfoById(gameId)).data
   console.log(commentInfo.value, 'commentInfo')
   length.value = commentInfo.value.length
   console.log(length.value, 'length')
+
   //获取平均值评分并传入游戏表
   commentInfo.value.forEach((value:any)=>{
     sum += value.commentScore
@@ -194,14 +202,21 @@ onMounted(async() => {
   console.log(avgInfo,'avgInfo')
   const result:any = (await addGameAvg(avgInfo)).data
   console.log(result,'avgs')
+
+  //根据id获取宣传主图文件名称
+  imageName.value = (await getImageNameById(id)).data
+  console.log(imageName,'主图文件名称');
+
+  //根据id获取宣传图片文件名称
+  pictureName.value = (await getPictureListById(id)).data
+  console.log(pictureName.value,'imagesname')
+
   //通过id获取游戏压缩包名称
   fileName.value = (await getFileNameByGameId(gameId)).data
   console.log(fileName.value, 'fileName')
-  //通过id获取游戏图片名称
-  const imageList = await getImageListById(gameId)
-  images.value = imageList.data
-  console.log(images, 'images')
-  handleDownload()
+
+  pictureDownload()
+  imageDownload()
   onsubmit()
 })
 
@@ -226,19 +241,57 @@ const userStore = UserStore()
 const username:string = userStore.username
 console.log(username,'username')
 
-//下载图片
-//下载图片 先根据id查找图片名称 然后再传入后端 一个个下载
+//根据主图名称下载主图
 const imageSrc = ref<string>('');
-const imageList:any = ref([])
-  const handleDownload = ()=> {
-    const fileType = '1';
-    for(const i in images.value){
+const images:any = ref([])
+const bgImages = ref<string>('');
+
+  const imageDownload = ()=> {    
+    // innerDrawer.value = true
+    const fileType = '3';
+    for(const i in imageName.value){
       axios.defaults.baseURL='http://127.0.0.1:7001';
       axios({
         method: 'post',
         url: '/api/files/download',
         data: {
-          fileName:images.value[i],
+          fileName:imageName.value[i],
+          fileType: fileType,
+        },
+        responseType: 'blob'
+      }).then((res)=>{
+        console.log(res,'susscs')
+        const { data } = res;
+        const reader = new FileReader()
+        reader.readAsDataURL(data)
+        reader.onload = (ev: any) => {
+          imageSrc.value = ev.target.result
+          images.value.push(imageSrc.value)
+          bgImages.value = images.value[0]
+          // bgImages.value = `url(${bgImages.value})`
+          // console.log(bgImages.value,'主图')
+        }
+      }).catch((error)=>{
+        console.log(error)
+      })
+    }
+  }
+  
+
+  //下载图片 先根据id查找宣传图片名称 然后再传入后端 一个个下载
+const pictureSrc = ref<string>('');
+const pictureList:any = ref([])
+  const pictureDownload = ()=> {
+    
+    // innerDrawer.value = true
+    const fileType = '1';
+    for(const i in pictureName.value){
+      axios.defaults.baseURL='http://127.0.0.1:7001';
+      axios({
+        method: 'post',
+        url: '/api/files/download',
+        data: {
+          fileName:pictureName.value[i],
           fileType: fileType,
         },
         responseType: 'blob'
@@ -246,18 +299,50 @@ const imageList:any = ref([])
         console.log(res)
         const { data } = res;
         const reader = new FileReader()
-        // G、	fileReader():是一种异步读取文件机制
         reader.readAsDataURL(data)
         reader.onload = (ev: any) => {
-          imageSrc.value = ev.target.result
-          imageList.value.push(imageSrc.value)
-          console.log(imageList.value,'imageList')
+          pictureSrc.value = ev.target.result
+          pictureList.value.push(pictureSrc.value)
+          console.log(pictureList.value,'imageList')
         }
       }).catch((error)=>{
         console.log(error)
       })
     }
   }
+
+//下载图片
+//下载图片 先根据id查找图片名称 然后再传入后端 一个个下载
+// const imageSrc = ref<string>('');
+// const imageList:any = ref([])
+//   const handleDownload = ()=> {
+//     const fileType = '1';
+//     for(const i in images.value){
+//       axios.defaults.baseURL='http://127.0.0.1:7001';
+//       axios({
+//         method: 'post',
+//         url: '/api/files/download',
+//         data: {
+//           fileName:images.value[i],
+//           fileType: fileType,
+//         },
+//         responseType: 'blob'
+//       }).then((res)=>{
+//         console.log(res,'图片')
+//         const { data } = res;
+//         const reader = new FileReader()
+//         // G、	fileReader():是一种异步读取文件机制
+//         reader.readAsDataURL(data)
+//         reader.onload = (ev: any) => {
+//           imageSrc.value = ev.target.result
+//           imageList.value.push(imageSrc.value)
+//           console.log(imageList.value,'imageList')
+//         }
+//       }).catch((error)=>{
+//         console.log(error)
+//       })
+//     }
+//   }
 //下载压缩包
 const handleDownloadFile = async ()=> {
     //如果需要验证用户，需要先发送普通连接请求验证后再进行下载操作
@@ -313,8 +398,6 @@ const handleDownloadFile = async ()=> {
   }
 
 
-
-
 //点赞
 // const isUp = ref(false)
 // const support = ref(0)
@@ -327,20 +410,30 @@ const handleDownloadFile = async ()=> {
 //   isUp.value=!isUp.value
 // }
 
-
 </script>
 
 <style scoped>
 .main{
     /* background-color: #1b1d1f; */
-    background: linear-gradient(180deg, #1b1d1f 20%, #e8e8e8 40%);
+   /* background: linear-gradient(180deg, #1b1d1f 20%, #e8e8e8 40%); */
+   /* background-image:url('../../../public/images/丧尸围城主图.jpeg') ;
+    background-size:cover;
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size:100% 100%;
+    image-rendering: -webkit-optimize-contrast;  */
+
+    margin:0px;
+    background: url('../../../public/images/丧尸围城主图.jpeg') no-repeat;
+    background-size:100% 100%;
+    background-attachment:fixed;
 }
 .header-menu{
   /* background-color: #1b1d1f; */
   color: #333;
   text-align: center;
   line-height: 60px;
-  height: 70px;
+  /* height: 70px; */
   /* margin: 8px;
   padding: 10px; */
 }
@@ -348,23 +441,21 @@ const handleDownloadFile = async ()=> {
     /* border: 1px solid silver ; */
     /* margin: 8px;
     padding: 10px; */
-    /* background-color: #f6f6f7; */
-    width: 80%;
-    margin-left: 10%;
+    width: 100%;
+    /* margin-left: 10%; */
 }
 
 header{
     /* border: 1px solid silver; */
-    /* width: 100%; */
-    height: 370px;
+    margin-left: 10%;
+    height: 350px;
     display: flex;
-    margin: 8px;
-    padding: 10px;
+    image-rendering:auto;
 }
-.header-left{
+/* .header-left{
   width: 49%;
   height: 89%;
-  /* border: 1px solid silver; */
+  border: 1px solid silver;
   margin: 8px;
   padding: 8px;
   position: relative;
@@ -372,28 +463,31 @@ header{
 .header-left-img{
   width: 99%;
   height: 99%;
-}
+} */
 
-.header-right{
-  width: 45%;
-  height: 99%;
+.header-item{
+  /* width: 45%; */
+  font-family: "Arial","Microsoft YaHei","黑体","宋体",sans-serif;;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
   /* border: 1px solid silver; */
-  margin: 8px;
+  margin-top: 60px;
   padding: 8px;
   position: relative;
 }
 .header-right-name{
   /* border: 1px solid black; */
   /* font-size: large; */
+  letter-spacing:5px;
   font-size: 52px;
-  font-weight: 500;
+  font-weight: 800;
   line-height: 1em;
-  margin: 5px;
+  margin-top: 30px;
   padding: 5px;
   color: #ffffff;
+  border-radius: 10px;
 }
 .header-right-tag{
-  margin: 5px;
+  margin-top: 10px;
   padding: 5px;
 }
 /* .header-right-desc{
@@ -402,22 +496,21 @@ header{
    margin: 5px;
 } */
 .header-right-title{
-  font-size: 38px;
+  font-size: 32px;
   width:100%;
   color: rgb(207, 203, 203);
-  margin: 5px;
+  margin-top: 10px;
   padding: 5px;
 }
-.header-right-team{
+/* .header-right-team{
   font-size: 28px;
   color: rgb(182, 178, 178);
-  /* margin: 5px; */
   margin-left: 5px;
   margin: 5px;
   padding: 5px;
-}
+} */
 .header-right-button{
-  margin: 5px;
+  margin-top: 20px;
   font-size: 32px;
   font-weight: 500;
   line-height: 1em;
@@ -425,6 +518,10 @@ header{
 .middle-layout{
     display: flex;
     background-color: rgb(255, 255, 255);
+    /* border: 1px solid silver; */
+    border-radius: 10px;
+    width: 80%;
+    margin-left: 10%;
     /* padding: 10px; */
 }
 aside{
@@ -501,9 +598,19 @@ main{
 .main-images-item{
   margin: 5px;
 }
+.el-carousel__item{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-image{
+  max-width: 100%;
+  max-height: 100%;
+}
 .el-carousel__item h3 {
   display: flex;
-  color: #475669;
+  color: #ffffff;
   opacity: 0.75;
   line-height: 300px;
   margin: 0;

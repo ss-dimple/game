@@ -8,6 +8,9 @@ import { join, extname } from 'path';
 import { FilesManageService } from '../../service/file/files.manage';
 import { downloadFileDto } from '../../dto/file/files.manage';
 
+
+
+
 @Controller(`${FILES_PREFIX_URL}/`)
 export class FilesManageController extends BaseController {
   @Inject()
@@ -17,6 +20,62 @@ export class FilesManageController extends BaseController {
   @Inject()
   filesManageService: FilesManageService;
 
+  @Post('/imageupload')
+  public async imageupload(
+    @Files() files,
+    @Fields() fields,
+    @Headers('host') host: string,
+    @Headers('x-forwarded-proto') proto: string,
+  ): Promise<ResOp> {
+    console.log(fields,files, 'files'); //fields包含了上传传文件的参数，根据上传文件的参数编写业务逻辑实现文件的重命名和文件归类
+
+    const result = await Promise.all(
+      files.map(async (file: any) => {
+        //重命名新的文件名
+        //extname获取文件扩展名，通过不同扩展名将图片和压缩包分开保存到文件夹下
+        const extnames = extname(file.filename);
+        console.log(extnames, 'extnames');
+        // let newFilename: any;
+        try {
+          const newFilename = this.utils.generateUUID() + extname(file.filename);
+            try {
+            //将上传的临时文件转存到正式文件目录，并将新的文件名进行持久化保存
+            copyFileSync(file.data, join(this.ctx.app.getAppDir(), 'public/upload/images', newFilename));
+          } catch (error) {
+            console.log(error);
+          }
+          return `${proto || 'http'}://${host}/public/upload/images/${newFilename}`;
+        } catch (error){
+          console.log(error);
+          
+        }
+        // const newFilename = this.utils.generateUUID() + extname(file.filename);
+        // try {
+        //   //将上传的临时文件转存到正式文件目录，并将新的文件名进行持久化保存
+        //   copyFileSync(file.data, join(this.ctx.app.getAppDir(), 'public/upload', newFilename));
+        // } catch (error) {
+        //   console.log(error);
+        // }
+        // return `${proto || 'http'}://${host}/public/upload/${newFilename}`;
+      }),
+    );
+    
+    console.log(result, 'result');
+    const filePath = result;
+    console.log(filePath, 'filePath');
+    //将该路径传入数据库
+    const code = await this.filesManageService.submitImage(filePath, fields);
+    if (code === true) {
+      return res({
+        data: {
+          info: '上传主图成功',
+        },
+      });
+    } else {
+      return res({ code: code });
+    }
+  }
+
   @Post('/upload')
   public async upload(
     @Files() files,
@@ -24,7 +83,7 @@ export class FilesManageController extends BaseController {
     @Headers('host') host: string,
     @Headers('x-forwarded-proto') proto: string,
   ): Promise<ResOp> {
-    console.log(fields, 'files'); //fields包含了上传传文件的参数，根据上传文件的参数编写业务逻辑实现文件的重命名和文件归类
+    console.log(fields,files, 'files'); //fields包含了上传传文件的参数，根据上传文件的参数编写业务逻辑实现文件的重命名和文件归类
     const result = await Promise.all(
       files.map(async (file: any) => {
         //重命名新的文件名
@@ -40,8 +99,8 @@ export class FilesManageController extends BaseController {
             return `${proto || 'http'}://${host}/public/upload/zip/${newFilename}`;
           } else {
             newFilename = fields.gameId + this.utils.generateUUID() + extname(file.filename);
-            copyFileSync(file.data, join(this.ctx.app.getAppDir(), 'public/upload/image', newFilename));
-            return `${proto || 'http'}://${host}/public/upload/image/${newFilename}`;
+            copyFileSync(file.data, join(this.ctx.app.getAppDir(), 'public/upload/pictures', newFilename));
+            return `${proto || 'http'}://${host}/public/upload/pictures/${newFilename}`;
           }
         } catch (error) {
           console.log(error);
@@ -83,9 +142,11 @@ export class FilesManageController extends BaseController {
     let downeFilename = '';
     try {
       if (dto.fileType === '1') {
-        downeFilename = join(this.ctx.app.getAppDir(), 'public/upload/image', dto.fileName);
+        downeFilename = join(this.ctx.app.getAppDir(), 'public/upload/pictures', dto.fileName);
       } else if (dto.fileType === '2') {
         downeFilename = join(this.ctx.app.getAppDir(), 'public/upload/zip', dto.fileName);
+      } else if (dto.fileType === '3') {
+        downeFilename = join(this.ctx.app.getAppDir(), 'public/upload/images', dto.fileName);
       }
       const statFile = statSync(downeFilename);
       console.log('file read');

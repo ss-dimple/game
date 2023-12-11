@@ -46,6 +46,18 @@ export class GameManageService extends BaseService {
     return result;
   }
 
+  async getTeamNameByTeamId(teamId: number) {
+    const teamName = await this.prisma.team.findFirst({
+      where: {
+        id: teamId
+      },
+      select :{
+        teamName: true
+      }
+    })
+    return teamName
+  }
+
   async submitGame(dto: AddGameDto) {
     console.log(dto, 'gameInfo');
     const game = await this.prisma.game.create({
@@ -58,7 +70,8 @@ export class GameManageService extends BaseService {
         gameDesc: dto.gameDesc,
         language: dto.newLanguage,
         set: dto.newSet,
-        status: dto.status,
+        teamName: dto.teamName,
+        // status: dto.status,
         gameMeta: dto.gameMeta,
         teacherId: dto.teacherId,
         username: dto.username,
@@ -118,6 +131,12 @@ export class GameManageService extends BaseService {
           contains: searchGameForm.typeId,
         },
       });
+      searchGameForm.check &&
+      Object.assign(whereObj, {
+        check: {
+          contains: searchGameForm.check,
+        },
+      });
     Object.assign(whereObj, {
       teacherId: userno.userno,
     });
@@ -133,6 +152,7 @@ export class GameManageService extends BaseService {
         gameName: ele.gameName,
         typeId: ele.typeId,
         gameTitle: ele.gameTitle,
+        check: ele.check
       });
     });
     return gameInfo;
@@ -168,32 +188,63 @@ export class GameManageService extends BaseService {
       where: whereObj,
     });
   }
-  async getImageListById(id: number) {
-    const fileType = '1';
-    const imageList = await this.prisma.file.findMany({
+  async getPictureListById(id: number) {
+    // const fileType1 = '1';
+    const pictureList = await this.prisma.file.findMany({
       where: {
         gameId: id,
-        fileType: fileType,
+        fileType: '1',
       },
       select: {
         filePath: true,
       },
     });
-    let imageName = '';
-    const images = [];
-    imageList.forEach((item: any) => {
-      // const obj = item.lastIndexOf('/');
-      // imageName = item.substr(obj + 1);
-      imageName = basename(item.filePath);
-      images.push(imageName);
-      return images;
+    // const image = await this.prisma.file.findMany({
+    //   where: {
+    //     gameId: id,
+    //     fileType: '3',
+    //   },
+    //   select: {
+    //     filePath: true,
+    //   },
+    // });
+    console.log(pictureList,'imageList');   
+    let pictureName = '';
+    const pictures = [];
+    pictureList.forEach((item: any) => {
+      pictureName = basename(item.filePath);
+      pictures.push(pictureName);
+      return pictures;
       // return imageName;
     });
-    console.log(images, 'images');
+    console.log(pictures, 'pictures');
     // const obj = imageList.lastIndexOf('/');
     // const imageName=imageList
-    return images;
+    return pictures;
   }
+
+  async getImageNameById(id: number) {
+    const result = await this.prisma.file.findMany({
+      where: {
+        gameId: id,
+        fileType: '3',
+      },
+      select: {
+        filePath: true,
+      },
+    });
+    console.log(result,'image');   
+    let imageName = '';
+    const image = [];
+    result.forEach((item: any) => {
+      imageName = basename(item.filePath);
+      image.push(imageName);
+      return image;
+    });
+    console.log(image, 'image');
+    return image;
+  }
+
   async getFileNameByGameId(gameId: number) {
     const fileType = '2';
     const fileList = await this.prisma.file.findMany({
@@ -220,6 +271,7 @@ export class GameManageService extends BaseService {
     // const imageName=imageList
     return files;
   }
+  
   async addGameAvg(avgInfo: any) {
     console.log(avgInfo, 'avgInfo');
     const result = await this.prisma.game.update({
@@ -233,18 +285,45 @@ export class GameManageService extends BaseService {
     console.log(result, 'result');
     return result;
   }
-  async updateConditionById(id: number) {
-    console.log(id, 'id');
-    const comdition = '1';
+  // async updateCheckById(id: number) {
+  //   console.log(id, 'id');
+  //   // const check = '1';
+  //   const result = await this.prisma.game.update({
+  //     where: {
+  //       id: Number(id),
+  //     },
+  //     data: {
+  //       check: 1,
+  //     },
+  //   });
+  //   console.log(result, 'result');
+  //   return result;
+  // }
+  
+  async updateCheck(dto:any){
     const result = await this.prisma.game.update({
       where: {
-        id: Number(id),
+        id: dto.gameId,
       },
       data: {
-        comdition: Number(comdition),
+        check: dto.check,
       },
     });
+
     console.log(result, 'result');
     return result;
+  }
+
+  async addRejectInfo(dto:any) {
+    const addRejectInfo = await this.prisma.reject.create({
+      data:{
+        gameId: dto.gameId,
+        teacherId: dto.teacherId,
+        username: dto.username,
+        reply: dto.reply
+      }
+    })
+    console.log(addRejectInfo, 'addRejectInfo');
+    return addRejectInfo;
   }
 }
